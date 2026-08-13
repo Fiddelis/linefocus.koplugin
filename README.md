@@ -65,7 +65,7 @@ To check Lua syntax for all source files:
 
 ```sh
 find . -name '*.lua' -not -path './.git/*' -print0 \
-  | xargs -0 -n1 luajit -b /dev/null /dev/null
+  | xargs -0 -n1 luajit -b /dev/null /private/tmp/linefocus-bytecode
 ```
 
 For a device or emulator smoke test, validate enabling/disabling, every visual

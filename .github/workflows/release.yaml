@@ -17,7 +17,7 @@ jobs:
         run: |
           mkdir linefocus.koplugin
           shopt -s extglob
-          cp -r !(linefocus.koplugin|.git|.github) linefocus.koplugin/
+          cp -r !(linefocus.koplugin|.git|.github|koreader) linefocus.koplugin/
 
       - name: Create zip archive
         run: |
