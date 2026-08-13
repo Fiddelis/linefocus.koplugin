@@ -1,0 +1,29 @@
+name: Build and Release KOReader Plugin
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Prepare plugin folder
+        run: |
+          mkdir linefocus.koplugin
+          shopt -s extglob
+          cp -r !(linefocus.koplugin|.git|.github) linefocus.koplugin/
+
+      - name: Create zip archive
+        run: |
+          zip -r linefocus.koplugin.zip linefocus.koplugin
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: linefocus.koplugin.zip
