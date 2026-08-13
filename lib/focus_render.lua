@@ -65,7 +65,7 @@ function FocusRender.transitionRegion(old_region, new_region, screen_width, scre
 end
 
 function FocusRender.opacityToGray(opacity)
-    return 1 - clamp(opacity or 0, 0, 100) / 100
+    return clamp(opacity or 0, 0, 100) / 100
 end
 
 function FocusRender.opacityFactor(opacity)

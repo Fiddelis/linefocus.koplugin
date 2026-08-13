@@ -24,5 +24,24 @@ assert(i18n:translate("Marker opacity") == "Opacidade do marcador", "explicit Po
 assert(i18n:translate("Gray focus window") == "Cinza com janela de foco", "gray treatment translation")
 assert(i18n:translate("Underline opacity") == "Opacidade do sublinhado", "underline opacity translation")
 assert(i18n:translate("Visual focus settings") == "Configurações visuais do foco", "visual settings translation")
+assert(i18n:translate("English") == "Inglês", "English language label translation")
+for _, label in ipairs({
+    "Visual treatment",
+    "Continuous underline",
+    "Gray other lines",
+    "Gray focus window",
+    "Thickness",
+    "Underline",
+    "Underline intensity",
+    "Gray",
+    "Clear lines",
+    "Automatic advance",
+    "On",
+    "Off",
+    "Interval",
+    "Close",
+}) do
+    assert(i18n:translate(label) ~= label, "preview translation: " .. label)
+end
 
 print("i18n_spec: ok")

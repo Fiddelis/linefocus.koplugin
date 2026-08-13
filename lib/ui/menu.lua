@@ -207,8 +207,8 @@ function Menu:showPreview()
                 self:previewAdjust("Thickness", "line_thickness", 1, 1, 4, "%d px"),
             },
             {
-                self:previewAdjust("Underline", "marker_opacity", -5, 0, 100, "%.0f%%"),
-                self:previewAdjust("Underline", "marker_opacity", 5, 0, 100, "%.0f%%"),
+                self:previewAdjust("Underline intensity", "marker_opacity", -5, 0, 100, "%.0f%%"),
+                self:previewAdjust("Underline intensity", "marker_opacity", 5, 0, 100, "%.0f%%"),
             },
             {
                 self:previewAdjust("Gray", "mask_opacity", -5, 0, 100, "%.0f%%"),

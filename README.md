@@ -46,8 +46,10 @@ all visual options in one compact screen:
 
 - **Visual treatment**: choose continuous underline, gray other lines, or a
   gray focus window.
-- **Underline thickness**: choose a lightweight 1–4 pixel line.
-- **Underline opacity** and **Gray opacity**: tune both cues from 0% to 100%.
+- **Underline thickness**: choose a 1–4 pixel line; the live sample uses the
+  same value as the page overlay.
+- **Underline intensity**: set the marker from 0% (invisible) to 100% (black).
+- **Gray opacity**: tune the dimming from 0% to 100%.
 - **Lines kept clear around focus**: keep 0–3 neighboring lines clear when
   using the gray focus window.
 - **Swipe navigation**: choose swipes, taps, both, or neither.

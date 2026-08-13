@@ -60,7 +60,7 @@ function Preview:paintMarker(bb, x, y, lines, focus_index)
 
     local marker_opacity = self.settings:getMarkerOpacity() or 30
     if marker_opacity > 0 then
-        local marker = FocusRender.markerRect(line, self.width, math.max(1, math.floor(self.line_height / 10)))
+        local marker = FocusRender.markerRect(line, self.width, self.settings:get("line_thickness"))
         bb:paintRect(
             x + marker.x,
             y + marker.y,
