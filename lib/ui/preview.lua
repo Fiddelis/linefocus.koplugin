@@ -15,7 +15,7 @@ local SAMPLE_LINES = {
     "with punctuation (and parentheses)",
     "kept inside the focus window.",
     "The surrounding lines fade away.",
-    "Choose the pattern that feels right.",
+    "Choose the treatment that feels right.",
 }
 
 function Preview:init()
@@ -41,27 +41,14 @@ function Preview:paintMask(bb, x, y, lines, focus_index)
         return
     end
 
-    local radius = pattern == "spotlight" and self.settings:get("focus_radius") or 0
+    local radius = pattern == "gray_window" and self.settings:get("focus_radius") or 0
     local bands = FocusRender.maskBands(lines, focus_index, radius, self.width, self.height)
-    local opacity = (self.settings:getMaskOpacity() or 25) / 100
+    local plan = FocusRender.maskPlan(pattern, self.settings:getMaskOpacity() or 25)
+    if plan.operation == "none" or plan.factor <= 0 then
+        return
+    end
     for _, band in ipairs(bands) do
-        if pattern == "dim_others" or pattern == "spotlight" then
-            for _ = 1, FocusRender.lightenPasses(opacity * 100) do
-                bb:lightenRect(x + band.x, y + band.y, band.w, band.h)
-            end
-        elseif pattern == "hatch_others" then
-            bb:hatchRect(x + band.x, y + band.y, band.w, band.h, math.max(2, math.floor(band.h / 8)), Blitbuffer.COLOR_BLACK, opacity)
-        elseif pattern == "checker_others" then
-            for _, grid_line in ipairs(FocusRender.gridLines(band, math.max(8, math.floor(self.line_height / 2)))) do
-                bb:paintRect(
-                    x + grid_line.x,
-                    y + grid_line.y,
-                    grid_line.w,
-                    grid_line.h,
-                    Blitbuffer.gray(FocusRender.opacityToGray(opacity * 100))
-                )
-            end
-        end
+        bb:darkenRect(x + band.x, y + band.y, band.w, band.h, plan.factor)
     end
 end
 
@@ -71,29 +58,15 @@ function Preview:paintMarker(bb, x, y, lines, focus_index)
         return
     end
 
-    local marker_opacity = (self.settings:getMarkerOpacity() or 30) / 100
-    local style = self.settings:get("marker_style")
-    if style == "band" or style == "both" then
-        bb:hatchRect(
-            x + line.x,
-            y + line.y,
-            self.width,
-            line.h,
-            line.h,
-            Blitbuffer.COLOR_BLACK,
-            marker_opacity * 0.35
-        )
-    end
-    if style == "underline" or style == "both" then
-        local marker = FocusRender.markerRect(line, self.width, math.max(2, math.floor(self.line_height / 10)))
-        bb:hatchRect(
+    local marker_opacity = self.settings:getMarkerOpacity() or 30
+    if marker_opacity > 0 then
+        local marker = FocusRender.markerRect(line, self.width, math.max(1, math.floor(self.line_height / 10)))
+        bb:paintRect(
             x + marker.x,
             y + marker.y,
             marker.w,
             marker.h,
-            marker.h,
-            Blitbuffer.COLOR_BLACK,
-            marker_opacity
+            Blitbuffer.gray(FocusRender.opacityToGray(marker_opacity))
         )
     end
 end

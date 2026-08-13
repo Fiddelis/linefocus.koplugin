@@ -11,8 +11,7 @@ local DEFAULTS = {
     mask_opacity = 25,
     navigation_mode = "both", -- tap, swipe, both, none
     tap_navigation = "relative", -- relative, vertical, horizontal, edges, anywhere, none
-    visual_pattern = "underline", -- underline, dim_others, spotlight, hatch_others, checker_others
-    marker_style = "underline", -- underline, band, both, none
+    visual_pattern = "underline", -- underline, gray_others, gray_window
     focus_radius = 1,
     notification = true,
     language = "auto", -- auto, en, pt-BR
@@ -43,6 +42,30 @@ end
 
 --- Load the default settings and overwrite it with value from settings file.
 function Settings:init()
+    local visual_pattern_migrations = {
+        dim_others = "gray_others",
+        spotlight = "gray_window",
+        hatch_others = "gray_others",
+        checker_others = "gray_others",
+    }
+    local old_pattern = self:get("visual_pattern")
+    if visual_pattern_migrations[old_pattern] then
+        self:set("visual_pattern", visual_pattern_migrations[old_pattern], true)
+    end
+
+    local line_thickness = tonumber(self:get("line_thickness"))
+    if line_thickness and line_thickness > 4 then
+        self:set("line_thickness", 4, true)
+    end
+    local focus_radius = tonumber(self:get("focus_radius"))
+    if focus_radius and focus_radius > 3 then
+        self:set("focus_radius", 3, true)
+    end
+    local auto_advance_seconds = tonumber(self:get("auto_advance_seconds"))
+    if auto_advance_seconds and auto_advance_seconds < 2 then
+        self:set("auto_advance_seconds", 2, true)
+    end
+
     if self:get("marker_opacity") == nil and self:get("line_intensity") ~= nil then
         local legacy_intensity = tonumber(self:get("line_intensity")) or 0.7
         self:set("marker_opacity", (1 - math.max(0, math.min(1, legacy_intensity))) * 100, true)

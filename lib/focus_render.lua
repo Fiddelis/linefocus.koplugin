@@ -49,23 +49,15 @@ function FocusRender.opacityToGray(opacity)
     return 1 - clamp(opacity or 0, 0, 100) / 100
 end
 
--- Grayscale KOReader buffers expose lightenRect without an alpha parameter.
--- Five passes keep the user-facing 0..100 range useful while remaining safe
--- for both grayscale e-ink and color buffers.
-function FocusRender.lightenPasses(opacity)
-    return math.floor(clamp(opacity or 0, 0, 100) / 20 + 0.5)
+function FocusRender.opacityFactor(opacity)
+    return clamp(opacity or 0, 0, 100) / 100
 end
 
-function FocusRender.gridLines(region, cell_size)
-    local size = math.max(2, cell_size or 12)
-    local lines = {}
-    for x = region.x, region.x + region.w - 1, size do
-        table.insert(lines, { x = x, y = region.y, w = 1, h = region.h })
+function FocusRender.maskPlan(pattern, opacity)
+    if pattern == "gray_others" or pattern == "gray_window" then
+        return { operation = "darkenRect", factor = FocusRender.opacityFactor(opacity) }
     end
-    for y = region.y, region.y + region.h - 1, size do
-        table.insert(lines, { x = region.x, y = y, w = region.w, h = 1 })
-    end
-    return lines
+    return { operation = "none", factor = 0 }
 end
 
 return FocusRender

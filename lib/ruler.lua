@@ -15,7 +15,6 @@ function Ruler:new(args)
     object.cached_texts_page = nil
     object.last_page = nil
     object.tap_to_move = false
-    object.line_style = "solid"
     object.model = FocusModel:new()
     return object
 end
@@ -111,7 +110,7 @@ end
 function Ruler:getRulerProperties()
     return {
         thickness = self.settings:get("line_thickness"),
-        style = self.line_style,
+        style = "solid",
         opacity = self.settings:getMarkerOpacity(),
     }
 end
@@ -132,12 +131,10 @@ end
 
 function Ruler:enterTapToMoveMode()
     self.tap_to_move = true
-    self.line_style = "dashed"
 end
 
 function Ruler:exitTapToMoveMode()
     self.tap_to_move = false
-    self.line_style = "solid"
 end
 
 function Ruler:clearCache()

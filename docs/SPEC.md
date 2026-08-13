@@ -6,7 +6,7 @@ Readers who use a visual ruler to keep their place can benefit from stronger vis
 
 ## Solution
 
-`linefocus.koplugin` adds a configurable reading-focus overlay to KOReader. It tracks the visible text lines on the current page, marks one line as focused, and renders one of several visual patterns: underline only, dim other lines, spotlight a focus window, or combine dimming with a marker. The same focus state can be moved with swipes, relative taps above or below the focused line, left/right taps, corner and edge taps, tap-to-place mode, dispatcher actions, or page transitions.
+`linefocus.koplugin` adds a configurable reading-focus overlay to KOReader. It tracks the visible text lines on the current page, marks one line with a continuous underline, and optionally applies solid-gray treatment to the lines outside the focus window. The same focus state can be moved with swipes, relative taps above or below the focused line, left/right taps, corner and edge taps, tap-to-place mode, dispatcher actions, or page transitions.
 
 Settings are persisted per device. Existing KOReader page navigation remains available when a focus move reaches the first or last visible line. The implementation uses KOReader's native document, gesture, widget, and blitbuffer APIs and has no third-party runtime dependency.
 
@@ -18,9 +18,9 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 4. As a reader, I want to adjust the marker thickness, so that it remains visible on different fonts and screen sizes.
 5. As a reader, I want to adjust marker intensity, so that the focus cue is visible without becoming distracting.
 6. As a reader, I want to dim lines other than the focused line, so that surrounding text attracts less attention.
-7. As a reader, I want to choose a spotlight window around the focused line, so that I can keep one or more nearby lines readable while dimming the rest.
-8. As a reader, I want a hatch or striped dimming pattern, so that I can distinguish the focus overlay from normal document rendering.
-9. As a reader, I want to choose whether the focused line has an underline, a band, both, or no marker, so that the visual treatment matches my preference.
+7. As a reader, I want to choose a gray focus window around the focused line, so that I can keep one or more nearby lines readable while graying the rest.
+8. As a reader, I want solid-gray dimming with configurable opacity, so that the treatment remains readable and inexpensive on e-ink devices.
+9. As a reader, I want a continuous underline marker, so that the focus cue has no visual gaps or navigation-state pattern.
 10. As a reader, I want the overlay to work on grayscale e-ink screens, so that it does not depend on color rendering or animation.
 11. As a reader, I want to move to the next line with a downward swipe and to the previous line with an upward swipe, so that I can advance while holding the device naturally.
 12. As a reader, I want to tap above or below the focused line to move in the corresponding direction, so that I can navigate without swiping.
@@ -55,8 +55,8 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 - Represent a visible line with its screen rectangle and preserve the original rectangle list for painting. The model must tolerate an empty list and non-contiguous line positions.
 - Prefer the document's screen text-box APIs and sort visible boxes by reading position before passing them to the model. This improves behavior for documents that return boxes in a different order and provides a best-effort order for multi-column pages.
 - Keep page transitions in the UI adapter because only the reader UI can dispatch `GotoViewRel`. The model reports `next_page` or `previous_page` when movement is requested beyond the current visible list.
-- Make visual treatment data-driven through persisted settings. The patterns are `underline`, `dim_others`, `spotlight`, `hatch_others`, and `checker_others`; the spotlight pattern uses a configurable focus radius.
-- Use KOReader-native blitbuffer operations: continuous `lightenRect` bands for dimming all glyphs (including punctuation), `hatchRect` for translucent stripes and markers, grayscale `paintRect` cells for the checkerboard pattern, and no custom framebuffer or external rendering dependency. Since grayscale buffers do not expose alpha for `lightenRect`, map the 0–100% setting to zero through five passes.
+- Make visual treatment data-driven through persisted settings. The patterns are `underline`, `gray_others`, and `gray_window`; the gray window uses a configurable number of clear neighboring lines.
+- Use KOReader-native blitbuffer operations: one `darkenRect` call per continuous gray band and one `paintRect` call for the underline. Do not use per-line patterns, repeated lighten passes, custom framebuffers, or external rendering dependencies.
 - Paint the marker directly from the current focus rectangle instead of delegating its position to a movable widget. This keeps the painted position and dirty region derived from the same state and prevents stale offsets when moving backward or forward.
 - Merge text segments with a shared baseline and nearby horizontal gap into one physical line. Keep distant same-height columns separate.
 - Persist marker and pattern opacity as percentages. Migrate the previous `line_intensity` value into the equivalent marker opacity when the new setting is first initialized.
@@ -64,7 +64,7 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 - Provide a preview card backed by a native `ButtonDialog` and a custom paintable widget. Preview changes update the same persisted settings and repaint the card immediately.
 - Schedule automatic next-line movement with KOReader's `UIManager:scheduleIn`, unscheduling it when disabled or when the reader widget closes.
 - Keep interaction modes explicit: swipe direction, tap zone policy, tap-to-place mode, and dispatcher actions. A tap on the marker toggles placement mode; a tap while in placement mode chooses the nearest visible line.
-- Use settings defaults that preserve the original ruler-like behavior for existing users while making the richer patterns discoverable from the menu.
+- Migrate the previous visual pattern names to their solid-gray equivalents and clamp Kindle-friendly thickness, focus-radius, and automatic-advance ranges.
 - Register state and navigation actions with KOReader's dispatcher and register the plugin as a reader view module so it can repaint above the document.
 - Build and release a folder named `linefocus.koplugin` inside the archive, matching KOReader's plugin installation convention.
 - Retain the upstream MIT license notice because the first implementation is derived from the public Reading Ruler plugin structure and API integration patterns.
@@ -72,10 +72,11 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 ## Testing Decisions
 
 - Test only externally observable focus behavior in the pure model: initial placement, next/previous movement, nearest-line placement, empty pages, and page-boundary results.
-- Test visual pattern planning as returned regions/styles rather than asserting widget internals. The KOReader adapter is covered by syntax checks and a small set of dependency stubs where practical.
-- Test continuous mask bands, marker geometry, opacity clamping, checker/grid cells, and Portuguese/automatic label selection at the pure seams.
+- Test visual treatment planning as returned regions/operations rather than asserting widget internals. The KOReader adapter is covered by syntax checks and a small set of dependency stubs where practical.
+- Test continuous mask bands, one-operation gray planning, continuous marker geometry, opacity clamping, and Portuguese/automatic label selection at the pure seams.
 - Run the model tests with the LuaJIT runtime shipped by the development machine; no test framework or third-party dependency is required.
 - Run Lua syntax checks over every plugin Lua file before publishing.
+- Keep a lightweight rendering plan check so regressions cannot reintroduce repeated buffer passes or per-cell pattern loops on Kindle.
 - Manually validate on a KOReader device or emulator: enable/disable, each visual pattern, swipe directions, each tap policy, tap-to-place mode, dispatcher actions, and crossing both page boundaries.
 - Prior art for integration behavior is KOReader's reader view modules and the upstream Reading Ruler plugin; tests should not depend on private widget implementation details.
 

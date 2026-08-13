@@ -10,11 +10,11 @@ the surrounding lines.
 
 ## Features
 
-- Underline, band, or combined marker for the focused line.
-- Visual patterns: underline only, dim other lines, spotlight a focus window,
-  hatch other lines, or a continuous checkerboard grid.
-- Adjustable marker thickness, marker opacity, pattern opacity, and spotlight
-  radius.
+- Continuous underline marker for the focused line.
+- Visual treatments: continuous underline, gray other lines, or a gray focus
+  window.
+- Adjustable underline thickness, underline opacity, gray opacity, and the
+  number of neighboring lines kept clear.
 - Swipe up/down to move to the previous/next visible line.
 - Tap above/below the focus, use top/bottom or left/right zones, tap page
   edges, or tap anywhere to advance.
@@ -22,7 +22,7 @@ the surrounding lines.
 - Automatic previous/next page navigation at line boundaries.
 - Optional automatic line advance with a configurable interval.
 - Portuguese or English plugin labels, with automatic detection from KOReader.
-- A live preview card for trying patterns, marker styles, opacity, and automatic
+- A live preview card for trying visual treatments, opacity, and automatic
   advance before closing the configuration menu.
 - Dispatcher actions for hardware keys, profiles, and custom gestures.
 - Persistent settings and optional notifications.
@@ -41,22 +41,23 @@ the surrounding lines.
 
 Open **Line focus** in the document menu:
 
-- **Visual pattern**: choose how non-focused lines are treated.
-- **Focus marker**: choose underline, band, both, or no marker.
-- **Line thickness**, **Marker opacity**, and **Pattern opacity**: tune the
-  focus cue and surrounding-line treatment from 0% to 100%.
-- **Spotlight radius**: keep this many neighboring lines undimmed when using
-  the spotlight pattern.
+- **Visual treatment**: choose continuous underline, gray other lines, or a
+  gray focus window.
+- **Underline thickness**: choose a lightweight 1–4 pixel line.
+- **Underline opacity** and **Gray opacity**: tune both cues from 0% to 100%.
+- **Lines kept clear around focus**: keep 0–3 neighboring lines clear when
+  using the gray focus window.
 - **Swipe navigation**: choose swipes, taps, both, or neither.
 - **Tap navigation zones**: choose relative above/below taps, vertical or
   horizontal halves, page edges, anywhere, or disabled.
-- **Automatic advance**: move to the next line at a chosen interval from 1 to
+- **Automatic advance**: move to the next line at a chosen interval from 2 to
   60 seconds.
 - **Language**: choose Automatic, Português, or English.
 
 Use **Preview and configure** to open a card over the document menu. Its sample
 contains punctuation and parentheses so the effect of each visual treatment is
-visible before applying it to the page.
+visible before applying it to the page. The preview uses the same solid-gray
+and continuous-underline operations as the document overlay.
 
 ## Dispatcher actions
 
@@ -85,9 +86,11 @@ find . -name '*.lua' -not -path './.git/*' -print0 \
   | xargs -0 -n1 luajit -b /dev/null /private/tmp/linefocus-bytecode
 ```
 
-For a device or emulator smoke test, validate enabling/disabling, every visual
-pattern, each tap policy, swipe directions, tap-to-place mode, dispatcher
-actions, and both page boundaries.
+For a device or emulator smoke test, validate enabling/disabling, all three
+visual treatments, opacity changes, each tap policy, swipe directions,
+tap-to-place mode, dispatcher actions, automatic advance, and both page
+boundaries. On Kindle-class devices, prioritize gray opacity changes and rapid
+line navigation to check that the overlay remains responsive.
 
 ## Limitations
 

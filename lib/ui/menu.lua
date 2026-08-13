@@ -57,61 +57,50 @@ function Menu:addToMainMenu(menu_items)
                 callback = function() self:showPreview() end,
             },
             {
-                text_func = function() return self:tr("Visual pattern") end,
+                text_func = function() return self:tr("Visual treatment") end,
                 sub_item_table = {
-                    self:choice("Underline only", "visual_pattern", "underline"),
-                    self:choice("Dim other lines", "visual_pattern", "dim_others"),
-                    self:choice("Spotlight focus window", "visual_pattern", "spotlight"),
-                    self:choice("Hatch other lines", "visual_pattern", "hatch_others"),
-                    self:choice("Checkerboard other lines", "visual_pattern", "checker_others"),
+                    self:choice("Continuous underline", "visual_pattern", "underline"),
+                    self:choice("Gray other lines", "visual_pattern", "gray_others"),
+                    self:choice("Gray focus window", "visual_pattern", "gray_window"),
                 },
             },
             {
-                text_func = function() return self:tr("Focus marker") end,
+                text_func = function() return self:tr("Underline thickness") end,
+                keep_menu_open = true,
+                callback = function() self:showNumberDialog("line_thickness", 1, 4, 1, 1, "Underline thickness") end,
+            },
+            {
+                text_func = function() return self:tr("Underline opacity") end,
+                keep_menu_open = true,
+                callback = function() self:showNumberDialog("marker_opacity", 0, 100, 5, 10, "Underline opacity", "%.0f%%") end,
+            },
+            {
+                text_func = function() return self:tr("Gray opacity") end,
+                keep_menu_open = true,
+                callback = function() self:showNumberDialog("mask_opacity", 0, 100, 5, 10, "Gray opacity", "%.0f%%") end,
+            },
+            {
+                text_func = function() return self:tr("Lines kept clear around focus") end,
+                keep_menu_open = true,
+                callback = function() self:showNumberDialog("focus_radius", 0, 3, 1, 1, "Lines kept clear around focus") end,
+            },
+            {
+                text_func = function() return self:tr("Navigation") end,
                 sub_item_table = {
-                    self:choice("Underline", "marker_style", "underline"),
-                    self:choice("Band", "marker_style", "band"),
-                    self:choice("Band and underline", "marker_style", "both"),
-                    self:choice("No marker", "marker_style", "none"),
-                },
-            },
-            {
-                text_func = function() return self:tr("Line thickness") end,
-                keep_menu_open = true,
-                callback = function() self:showNumberDialog("line_thickness", 1, 12, 1, 2, "Line thickness") end,
-            },
-            {
-                text_func = function() return self:tr("Marker opacity") end,
-                keep_menu_open = true,
-                callback = function() self:showNumberDialog("marker_opacity", 0, 100, 5, 10, "Marker opacity", "%.0f%%") end,
-            },
-            {
-                text_func = function() return self:tr("Pattern opacity") end,
-                keep_menu_open = true,
-                callback = function() self:showNumberDialog("mask_opacity", 0, 100, 5, 10, "Pattern opacity", "%.0f%%") end,
-            },
-            {
-                text_func = function() return self:tr("Spotlight radius") end,
-                keep_menu_open = true,
-                callback = function() self:showNumberDialog("focus_radius", 0, 4, 1, 1, "Spotlight radius") end,
-            },
-            {
-                text_func = function() return self:tr("Swipe navigation") end,
-                sub_item_table = {
-                    self:choice("Swipe only", "navigation_mode", "swipe"),
-                    self:choice("Taps only", "navigation_mode", "tap"),
-                    self:choice("Swipe and taps", "navigation_mode", "both"),
+                    self:choice("Swipe up/down", "navigation_mode", "swipe"),
+                    self:choice("Tap above/below", "navigation_mode", "tap"),
+                    self:choice("Swipes and taps", "navigation_mode", "both"),
                     self:choice("Disabled", "navigation_mode", "none"),
                 },
             },
             {
-                text_func = function() return self:tr("Tap navigation zones") end,
+                text_func = function() return self:tr("Tap direction") end,
                 sub_item_table = {
-                    self:choice("Above / below focus", "tap_navigation", "relative"),
-                    self:choice("Top / bottom halves", "tap_navigation", "vertical"),
-                    self:choice("Left / right halves", "tap_navigation", "horizontal"),
+                    self:choice("Above/below focus", "tap_navigation", "relative"),
+                    self:choice("Top/bottom halves", "tap_navigation", "vertical"),
+                    self:choice("Left/right halves", "tap_navigation", "horizontal"),
                     self:choice("Page edges", "tap_navigation", "edges"),
-                    self:choice("Tap anywhere to advance", "tap_navigation", "anywhere"),
+                    self:choice("Anywhere advances", "tap_navigation", "anywhere"),
                     self:choice("Disabled", "tap_navigation", "none"),
                 },
             },
@@ -124,7 +113,7 @@ function Menu:addToMainMenu(menu_items)
             {
                 text_func = function() return self:tr("Automatic advance interval") end,
                 keep_menu_open = true,
-                callback = function() self:showNumberDialog("auto_advance_seconds", 1, 60, 1, 5, "Automatic advance interval", "%.0f s") end,
+                callback = function() self:showNumberDialog("auto_advance_seconds", 2, 60, 1, 5, "Automatic advance interval", "%.0f s") end,
             },
             {
                 text_func = function() return self:tr("Language") end,
@@ -214,39 +203,29 @@ function Menu:showPreview()
         _added_widgets = { preview },
         buttons = {
             {
-                self:previewChoice("Pattern", "visual_pattern", { "underline", "dim_others", "spotlight", "hatch_others", "checker_others" }, {
-                    underline = "Underline only",
-                    dim_others = "Dim other lines",
-                    spotlight = "Spotlight focus window",
-                    hatch_others = "Hatch other lines",
-                    checker_others = "Checkerboard other lines",
-                }),
-            },
-            {
-                self:previewChoice("Marker", "marker_style", { "underline", "band", "both", "none" }, {
-                    underline = "Underline",
-                    band = "Band",
-                    both = "Band and underline",
-                    none = "No marker",
+                self:previewChoice("Visual treatment", "visual_pattern", { "underline", "gray_others", "gray_window" }, {
+                    underline = "Continuous underline",
+                    gray_others = "Gray other lines",
+                    gray_window = "Gray focus window",
                 }),
             },
             {
                 {
-                    text_func = function() return self:tr("Marker opacity") .. " -" end,
+                    text_func = function() return self:tr("Underline opacity") .. " -" end,
                     callback = function() self:adjustPreviewOpacity("marker_opacity", -5, dialog) end,
                 },
                 {
-                    text_func = function() return self:tr("Marker opacity") .. " +" end,
+                    text_func = function() return self:tr("Underline opacity") .. " +" end,
                     callback = function() self:adjustPreviewOpacity("marker_opacity", 5, dialog) end,
                 },
             },
             {
                 {
-                    text_func = function() return self:tr("Pattern opacity") .. " -" end,
+                    text_func = function() return self:tr("Gray opacity") .. " -" end,
                     callback = function() self:adjustPreviewOpacity("mask_opacity", -5, dialog) end,
                 },
                 {
-                    text_func = function() return self:tr("Pattern opacity") .. " +" end,
+                    text_func = function() return self:tr("Gray opacity") .. " +" end,
                     callback = function() self:adjustPreviewOpacity("mask_opacity", 5, dialog) end,
                 },
             },
@@ -283,7 +262,7 @@ function Menu:showAbout()
     UIManager:show(InfoMessage:new{
         text = self:tr("Line Focus for KOReader") .. "\nv" .. version .. latest_text .. [[
 
-]] .. self:tr("Configurable line focus overlay with dimming patterns and gesture navigation.") .. [[
+]] .. self:tr("Configurable line focus overlay with gray treatments and gesture navigation.") .. [[
 
 ]] .. self:tr("Project:") .. [[
 github.com/Fiddelis/linefocus.koplugin

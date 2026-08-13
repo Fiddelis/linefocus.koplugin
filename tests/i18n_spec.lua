@@ -21,5 +21,7 @@ assert(i18n:translate("Line focus") == "Line focus", "explicit English translati
 
 settings.language = "pt-BR"
 assert(i18n:translate("Marker opacity") == "Opacidade do marcador", "explicit Portuguese translation")
+assert(i18n:translate("Gray focus window") == "Cinza com janela de foco", "gray treatment translation")
+assert(i18n:translate("Underline opacity") == "Opacidade do sublinhado", "underline opacity translation")
 
 print("i18n_spec: ok")

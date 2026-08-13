@@ -27,7 +27,16 @@ function RulerUI:new(args)
     object.last_marker_region = nil
     object.pending_update_region = nil
     object.last_visual_pattern = nil
-    object.last_marker_style = nil
+    object.last_mask_opacity = nil
+    object.last_focus_radius = nil
+    object.force_full_repaint = true
+    object.mask_bands = nil
+    object.mask_pattern = nil
+    object.mask_focus_index = nil
+    object.mask_radius = nil
+    object.mask_line_count = nil
+    object.mask_plan = nil
+    object.mask_plan_key = nil
     object.auto_advance_action = function()
         object:onAutoAdvanceTick()
     end
@@ -46,13 +55,8 @@ end
 
 function RulerUI:getMarkerRegion()
     local line = self.ruler:getFocusedLine()
-    local marker_style = self.settings:get("marker_style")
-    if not line or marker_style == "none" then
+    if not line then
         return nil
-    end
-
-    if marker_style == "band" or marker_style == "both" then
-        return Geom:new{ x = 0, y = line.y, w = Screen:getWidth(), h = line.h }
     end
     return Geom:new(FocusRender.markerRect(line, Screen:getWidth(), self.settings:get("line_thickness")))
 end
@@ -75,40 +79,50 @@ function RulerUI:paintPattern(bb, x, y)
     if not self.ruler:getFocusedIndex() or #lines == 0 then
         return
     end
-    local focus_radius = pattern == "spotlight" and self.settings:get("focus_radius") or 0
-    local bands = FocusRender.maskBands(
+    local bands = self:getMaskBands(pattern, lines)
+    local plan = self:getMaskPlan(pattern)
+    if plan.operation == "none" or plan.factor <= 0 then
+        return
+    end
+
+    for _, band in ipairs(bands) do
+        bb:darkenRect(x + band.x, y + band.y, band.w, band.h, plan.factor)
+    end
+end
+
+function RulerUI:getMaskPlan(pattern)
+    local opacity = self.settings:getMaskOpacity()
+    local key = pattern .. ":" .. opacity
+    if self.mask_plan_key == key and self.mask_plan then
+        return self.mask_plan
+    end
+    self.mask_plan_key = key
+    self.mask_plan = FocusRender.maskPlan(pattern, opacity)
+    return self.mask_plan
+end
+
+function RulerUI:getMaskBands(pattern, lines)
+    local focus_index = self.ruler:getFocusedIndex()
+    local radius = pattern == "gray_window" and self.settings:get("focus_radius") or 0
+    if self.mask_bands
+        and self.mask_pattern == pattern
+        and self.mask_focus_index == focus_index
+        and self.mask_radius == radius
+        and self.mask_line_count == #lines then
+        return self.mask_bands
+    end
+    self.mask_pattern = pattern
+    self.mask_focus_index = focus_index
+    self.mask_radius = radius
+    self.mask_line_count = #lines
+    self.mask_bands = FocusRender.maskBands(
         lines,
-        self.ruler:getFocusedIndex(),
-        focus_radius,
+        focus_index,
+        radius,
         Screen:getWidth(),
         Screen:getHeight()
     )
-    local opacity = self.settings:getMaskOpacity() / 100
-
-    for _, band in ipairs(bands) do
-        local band_x, band_y = x + band.x, y + band.y
-        if pattern == "dim_others" or pattern == "spotlight" then
-            -- Continuous bands include punctuation and glyph fragments that
-            -- may not have their own text segment. Repeated lightenRect calls
-            -- provide opacity control on grayscale e-ink buffers as well.
-            for _ = 1, FocusRender.lightenPasses(opacity * 100) do
-                bb:lightenRect(band_x, band_y, band.w, band.h)
-            end
-        elseif pattern == "hatch_others" then
-            bb:hatchRect(band_x, band_y, band.w, band.h, math.max(2, math.floor(band.h / 8)), Blitbuffer.COLOR_BLACK, opacity)
-        elseif pattern == "checker_others" then
-            local cell_size = math.max(Screen:scaleBySize(12), math.floor(Screen:getHeight() / 45))
-            for _, grid_line in ipairs(FocusRender.gridLines(band, cell_size)) do
-                bb:paintRect(
-                    x + grid_line.x,
-                    y + grid_line.y,
-                    grid_line.w,
-                    grid_line.h,
-                    Blitbuffer.gray(FocusRender.opacityToGray(opacity * 100))
-                )
-            end
-        end
-    end
+    return self.mask_bands
 end
 
 function RulerUI:paintMarker(bb, x, y)
@@ -117,57 +131,32 @@ function RulerUI:paintMarker(bb, x, y)
         return
     end
 
-    local marker_style = self.settings:get("marker_style")
-    local marker_opacity = self.settings:getMarkerOpacity() / 100
-    if marker_style == "band" or marker_style == "both" then
-        bb:hatchRect(
-            x,
-            y + line.y,
-            Screen:getWidth(),
-            line.h,
-            line.h,
-            Blitbuffer.COLOR_BLACK,
-            marker_opacity * 0.35
-        )
-    end
-    if marker_style ~= "underline" and marker_style ~= "both" then
+    local marker_opacity = self.settings:getMarkerOpacity()
+    if marker_opacity <= 0 then
         return
     end
 
     local marker = FocusRender.markerRect(line, Screen:getWidth(), self.settings:get("line_thickness"))
-    if self.ruler.line_style == "dashed" then
-        for marker_x = 0, marker.w - 1, 20 do
-            bb:hatchRect(
-                x + marker_x,
-                y + marker.y,
-                math.min(14, marker.w - marker_x),
-                marker.h,
-                marker.h,
-                Blitbuffer.COLOR_BLACK,
-                marker_opacity
-            )
-        end
-    else
-        bb:hatchRect(
-            x + marker.x,
-            y + marker.y,
-            marker.w,
-            marker.h,
-            marker.h,
-            Blitbuffer.COLOR_BLACK,
-            marker_opacity
-        )
-    end
+    bb:paintRect(
+        x + marker.x,
+        y + marker.y,
+        marker.w,
+        marker.h,
+        Blitbuffer.gray(FocusRender.opacityToGray(marker_opacity))
+    )
 end
 
 function RulerUI:updateUI()
     local old_region = self.last_marker_region
     local new_region = self:getMarkerRegion()
     local pattern = self.settings:get("visual_pattern")
-    local marker_style = self.settings:get("marker_style")
-    local needs_full_repaint = pattern ~= "underline"
-        or self.last_visual_pattern ~= nil and self.last_visual_pattern ~= pattern
-        or self.last_marker_style ~= nil and self.last_marker_style ~= marker_style
+    local mask_opacity = self.settings:getMaskOpacity()
+    local focus_radius = self.settings:get("focus_radius")
+    local pattern_changed = self.last_visual_pattern ~= nil and self.last_visual_pattern ~= pattern
+    local gray_settings_changed = pattern ~= "underline"
+        and (self.last_mask_opacity ~= nil and self.last_mask_opacity ~= mask_opacity
+            or self.last_focus_radius ~= nil and self.last_focus_radius ~= focus_radius)
+    local needs_full_repaint = self.force_full_repaint or pattern_changed or gray_settings_changed
 
     if needs_full_repaint then
         self.pending_update_region = Screen:getSize()
@@ -178,7 +167,9 @@ function RulerUI:updateUI()
     end
 
     self.last_visual_pattern = pattern
-    self.last_marker_style = marker_style
+    self.last_mask_opacity = mask_opacity
+    self.last_focus_radius = focus_radius
+    self.force_full_repaint = false
     self.last_marker_region = new_region
     self:repaint()
 end
@@ -207,6 +198,8 @@ function RulerUI:onPageUpdate(new_page)
     if not self.settings:isEnabled() then
         return
     end
+    self.force_full_repaint = true
+    self.mask_bands = nil
     self.ruler:setInitialPositionOnPage(new_page)
     self:updateUI()
 end
@@ -244,6 +237,8 @@ end
 function RulerUI:setEnabled(enabled)
     if enabled then
         self.settings:enable()
+        self.force_full_repaint = true
+        self.mask_bands = nil
         self.ruler:clearCache()
         self.ruler:setInitialPositionOnPage(self.document:getCurrentPage())
         self:updateUI()
