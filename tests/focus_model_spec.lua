@@ -31,4 +31,12 @@ model:setLines({ line(50), line(10), line(30) }, "next", 1)
 assert_equal(model:getLines()[1].y, 10, "line boxes sorted by y")
 assert_equal(model:getLines()[3].y, 50, "line boxes sorted by y end")
 
+model:setLines({ { x = 10, y = 10, w = 50, h = 12 }, { x = 80, y = 11, w = 40, h = 10 }, line(40, 12) }, "next", 1)
+assert_equal(#model:getLines(), 2, "segments on one physical line are merged")
+assert_equal(model:getLines()[1].x, 10, "merged line keeps left edge")
+assert_equal(model:getLines()[1].w, 110, "merged line covers punctuation and trailing segments")
+
+model:setLines({ { x = 10, y = 10, w = 200, h = 12 }, { x = 500, y = 11, w = 200, h = 10 } }, "next", 1)
+assert_equal(#model:getLines(), 2, "separate columns remain separate lines")
+
 print("focus_model_spec: ok")

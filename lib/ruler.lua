@@ -1,4 +1,3 @@
-local Blitbuffer = require("ffi/blitbuffer")
 local Device = require("device")
 local FocusModel = require("lib/focus_model")
 local logger = require("logger")
@@ -113,7 +112,7 @@ function Ruler:getRulerProperties()
     return {
         thickness = self.settings:get("line_thickness"),
         style = self.line_style,
-        color = Blitbuffer.gray(self.settings:get("line_intensity")),
+        opacity = self.settings:getMarkerOpacity(),
     }
 end
 

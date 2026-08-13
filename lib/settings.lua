@@ -7,13 +7,17 @@ local SETTINGS_FILE = DataStorage:getSettingsDir() .. "/linefocus_settings.lua"
 local DEFAULTS = {
     enabled = false,
     line_thickness = 2,
-    line_intensity = 0.7,
+    marker_opacity = 30,
+    mask_opacity = 25,
     navigation_mode = "both", -- tap, swipe, both, none
     tap_navigation = "relative", -- relative, vertical, horizontal, edges, anywhere, none
-    visual_pattern = "underline", -- underline, dim_others, spotlight, hatch_others
+    visual_pattern = "underline", -- underline, dim_others, spotlight, hatch_others, checker_others
     marker_style = "underline", -- underline, band, both, none
     focus_radius = 1,
     notification = true,
+    language = "auto", -- auto, en, pt-BR
+    auto_advance = false,
+    auto_advance_seconds = 5,
 }
 
 ---@class Settings
@@ -39,6 +43,11 @@ end
 
 --- Load the default settings and overwrite it with value from settings file.
 function Settings:init()
+    if self:get("marker_opacity") == nil and self:get("line_intensity") ~= nil then
+        local legacy_intensity = tonumber(self:get("line_intensity")) or 0.7
+        self:set("marker_opacity", (1 - math.max(0, math.min(1, legacy_intensity))) * 100, true)
+    end
+
     -- Initialize with default values if not set
     for key, value in pairs(DEFAULTS) do
         if self:get(key) == nil then
@@ -47,6 +56,14 @@ function Settings:init()
     end
 
     self.settings:flush()
+end
+
+function Settings:getMarkerOpacity()
+    return math.max(0, math.min(100, tonumber(self:get("marker_opacity")) or DEFAULTS.marker_opacity))
+end
+
+function Settings:getMaskOpacity()
+    return math.max(0, math.min(100, tonumber(self:get("mask_opacity")) or DEFAULTS.mask_opacity))
 end
 
 --- Get settings from the settings file.

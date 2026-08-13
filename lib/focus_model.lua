@@ -1,5 +1,26 @@
 local FocusModel = {}
 
+local function merge_line(target, source)
+    local left = math.min(target.x or 0, source.x or 0)
+    local top = math.min(target.y, source.y)
+    local right = math.max((target.x or 0) + (target.w or 0), (source.x or 0) + (source.w or 0))
+    local bottom = math.max(target.y + target.h, source.y + source.h)
+    target.x = left
+    target.y = top
+    target.w = right - left
+    target.h = bottom - top
+end
+
+local function belongs_to_same_line(previous, current)
+    local previous_middle = previous.y + previous.h / 2
+    local current_middle = current.y + current.h / 2
+    local tolerance = math.max(previous.h, current.h) * 0.6
+    local previous_right = (previous.x or 0) + (previous.w or 0)
+    local horizontal_gap = (current.x or 0) - previous_right
+    local max_gap = math.max(previous.h, current.h) * 6
+    return math.abs(previous_middle - current_middle) <= tolerance and horizontal_gap <= max_gap
+end
+
 local function copy_lines(lines)
     local result = {}
     for _, line in ipairs(lines or {}) do
@@ -14,7 +35,22 @@ local function copy_lines(lines)
         end
         return a.y < b.y
     end)
-    return result
+
+    local merged = {}
+    for _, line in ipairs(result) do
+        local previous = merged[#merged]
+        if previous and belongs_to_same_line(previous, line) then
+            merge_line(previous, line)
+        else
+            table.insert(merged, {
+                x = line.x or 0,
+                y = line.y,
+                w = line.w or 0,
+                h = line.h,
+            })
+        end
+    end
+    return merged
 end
 
 function FocusModel:new()
