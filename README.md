@@ -22,8 +22,8 @@ the surrounding lines.
 - Automatic previous/next page navigation at line boundaries.
 - Optional automatic line advance with a configurable interval.
 - Portuguese or English plugin labels, with automatic detection from KOReader.
-- A live preview card for trying visual treatments, opacity, and automatic
-  advance before closing the configuration menu.
+- A compact visual-settings card containing the treatment, thickness, both
+  opacities, clear-neighbor count, and automatic-advance controls.
 - Dispatcher actions for hardware keys, profiles, and custom gestures.
 - Persistent settings and optional notifications.
 - Best-effort ordering for multi-column pages.
@@ -39,7 +39,8 @@ the surrounding lines.
 
 ## Configuration
 
-Open **Line focus** in the document menu:
+Open **Line focus** in the document menu. Choose **Visual focus settings** for
+all visual options in one compact screen:
 
 - **Visual treatment**: choose continuous underline, gray other lines, or a
   gray focus window.
@@ -54,10 +55,10 @@ Open **Line focus** in the document menu:
   60 seconds.
 - **Language**: choose Automatic, Português, or English.
 
-Use **Preview and configure** to open a card over the document menu. Its sample
-contains punctuation and parentheses so the effect of each visual treatment is
-visible before applying it to the page. The preview uses the same solid-gray
-and continuous-underline operations as the document overlay.
+The settings card updates its labels and sample immediately after every change.
+Its sample contains punctuation and parentheses so the effect of each visual
+treatment is visible before applying it to the page. The preview uses the same
+solid-gray and continuous-underline operations as the document overlay.
 
 ## Dispatcher actions
 

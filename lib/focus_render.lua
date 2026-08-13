@@ -45,6 +45,25 @@ function FocusRender.maskBands(lines, focus_index, radius, screen_width, screen_
     return bands
 end
 
+function FocusRender.focusRegion(lines, focus_index, radius, screen_width, screen_height)
+    local window = FocusRender.focusWindow(lines, focus_index, radius)
+    if not window then
+        return nil
+    end
+    local top = clamp(window.top, 0, screen_height)
+    local bottom = clamp(window.bottom, top, screen_height)
+    return { x = 0, y = top, w = screen_width, h = bottom - top }
+end
+
+function FocusRender.transitionRegion(old_region, new_region, screen_width, screen_height)
+    if not old_region or not new_region then
+        return { x = 0, y = 0, w = screen_width, h = screen_height }
+    end
+    local top = math.min(old_region.y, new_region.y)
+    local bottom = math.max(old_region.y + old_region.h, new_region.y + new_region.h)
+    return { x = 0, y = top, w = screen_width, h = bottom - top }
+end
+
 function FocusRender.opacityToGray(opacity)
     return 1 - clamp(opacity or 0, 0, 100) / 100
 end

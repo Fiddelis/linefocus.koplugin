@@ -30,6 +30,7 @@ function RulerUI:new(args)
     object.last_mask_opacity = nil
     object.last_focus_radius = nil
     object.force_full_repaint = true
+    object.last_focus_region = nil
     object.mask_bands = nil
     object.mask_pattern = nil
     object.mask_focus_index = nil
@@ -125,6 +126,18 @@ function RulerUI:getMaskBands(pattern, lines)
     return self.mask_bands
 end
 
+function RulerUI:getFocusRegion(pattern)
+    local lines = self.ruler:getLines()
+    local region = self.ruler:getFocusedIndex() and FocusRender.focusRegion(
+        lines,
+        self.ruler:getFocusedIndex(),
+        pattern == "gray_window" and self.settings:get("focus_radius") or 0,
+        Screen:getWidth(),
+        Screen:getHeight()
+    ) or nil
+    return region and Geom:new(region) or nil
+end
+
 function RulerUI:paintMarker(bb, x, y)
     local line = self.ruler:getFocusedLine()
     if not line then
@@ -149,6 +162,7 @@ end
 function RulerUI:updateUI()
     local old_region = self.last_marker_region
     local new_region = self:getMarkerRegion()
+    local old_focus_region = self.last_focus_region
     local pattern = self.settings:get("visual_pattern")
     local mask_opacity = self.settings:getMaskOpacity()
     local focus_radius = self.settings:get("focus_radius")
@@ -160,6 +174,13 @@ function RulerUI:updateUI()
 
     if needs_full_repaint then
         self.pending_update_region = Screen:getSize()
+    elseif pattern ~= "underline" then
+        self.pending_update_region = Geom:new(FocusRender.transitionRegion(
+            old_focus_region,
+            self:getFocusRegion(pattern),
+            Screen:getWidth(),
+            Screen:getHeight()
+        ))
     elseif old_region and new_region then
         self.pending_update_region = old_region:combine(new_region)
     else
@@ -171,6 +192,7 @@ function RulerUI:updateUI()
     self.last_focus_radius = focus_radius
     self.force_full_repaint = false
     self.last_marker_region = new_region
+    self.last_focus_region = self:getFocusRegion(pattern)
     self:repaint()
 end
 

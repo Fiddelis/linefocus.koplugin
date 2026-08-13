@@ -58,10 +58,12 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 - Make visual treatment data-driven through persisted settings. The patterns are `underline`, `gray_others`, and `gray_window`; the gray window uses a configurable number of clear neighboring lines.
 - Use KOReader-native blitbuffer operations: one `darkenRect` call per continuous gray band and one `paintRect` call for the underline. Do not use per-line patterns, repeated lighten passes, custom framebuffers, or external rendering dependencies.
 - Paint the marker directly from the current focus rectangle instead of delegating its position to a movable widget. This keeps the painted position and dirty region derived from the same state and prevents stale offsets when moving backward or forward.
+- When a gray focus moves, refresh the bounding transition between the old and new focus windows so the previous clear area is repainted without forcing a full-screen refresh on every line move.
 - Merge text segments with a shared baseline and nearby horizontal gap into one physical line. Keep distant same-height columns separate.
 - Persist marker and pattern opacity as percentages. Migrate the previous `line_intensity` value into the equivalent marker opacity when the new setting is first initialized.
 - Provide a small local Portuguese dictionary with Automatic/English/Português selection. Use dynamic menu text functions so changing language does not require restarting KOReader.
 - Provide a preview card backed by a native `ButtonDialog` and a custom paintable widget. Preview changes update the same persisted settings and repaint the card immediately.
+- Rebuild the native preview dialog after a setting change because KOReader evaluates button `text_func` values during button creation; this keeps displayed values synchronized with the sample.
 - Schedule automatic next-line movement with KOReader's `UIManager:scheduleIn`, unscheduling it when disabled or when the reader widget closes.
 - Keep interaction modes explicit: swipe direction, tap zone policy, tap-to-place mode, and dispatcher actions. A tap on the marker toggles placement mode; a tap while in placement mode chooses the nearest visible line.
 - Migrate the previous visual pattern names to their solid-gray equivalents and clamp Kindle-friendly thickness, focus-radius, and automatic-advance ranges.
@@ -77,6 +79,7 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 - Run the model tests with the LuaJIT runtime shipped by the development machine; no test framework or third-party dependency is required.
 - Run Lua syntax checks over every plugin Lua file before publishing.
 - Keep a lightweight rendering plan check so regressions cannot reintroduce repeated buffer passes or per-cell pattern loops on Kindle.
+- Test focus transition regions so old gray overlays cannot remain visible after moving to the next or previous line.
 - Manually validate on a KOReader device or emulator: enable/disable, each visual pattern, swipe directions, each tap policy, tap-to-place mode, dispatcher actions, and crossing both page boundaries.
 - Prior art for integration behavior is KOReader's reader view modules and the upstream Reading Ruler plugin; tests should not depend on private widget implementation details.
 

@@ -34,4 +34,10 @@ assert_equal(gray_plan.operation, "darkenRect", "gray mask uses one native buffe
 assert_equal(gray_plan.factor, 0.25, "gray mask preserves opacity")
 assert_equal(FocusRender.maskPlan("underline", 25).operation, "none", "underline skips mask rendering")
 
+local old_focus = FocusRender.focusRegion(lines, 2, 0, 480, 160)
+local new_focus = FocusRender.focusRegion(lines, 3, 0, 480, 160)
+local transition = FocusRender.transitionRegion(old_focus, new_focus, 480, 160)
+assert_equal(transition.y, 45, "mask transition starts at old focus")
+assert_equal(transition.h, 37, "mask transition covers old and new focus")
+
 print("focus_render_spec: ok")
