@@ -40,6 +40,13 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 26. As a maintainer, I want the focus and navigation decisions isolated from KOReader widgets, so that they can be tested without an e-reader device.
 27. As a maintainer, I want the plugin archive to have the standard `.koplugin` layout, so that it can be installed from a release without manual file rearrangement.
 28. As a maintainer, I want the README to document installation, settings, gestures, limitations, and testing, so that users can adopt the plugin without reading its source.
+29. As a reader, I want the focus marker to remain visible after moving between lines, so that navigation never loses my place.
+30. As a reader, I want dimming to use continuous horizontal regions, so that the overlay does not look like separate rectangles attached to each word or line segment.
+31. As a reader, I want punctuation such as parentheses to receive the same treatment as the rest of its line, so that the visual focus is consistent.
+32. As a reader, I want opacity controls expressed as a broad percentage range, so that I can make the marker and pattern subtle or strong.
+33. As a reader, I want to choose Portuguese for the plugin interface, so that configuration labels and notifications are easy to understand.
+34. As a reader, I want to see a live sample while configuring the plugin, so that I can compare patterns without repeatedly returning to the document.
+35. As a reader, I want automatic line advance with a configurable interval, so that I can read hands-free.
 
 ## Implementation Decisions
 
@@ -48,8 +55,14 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 - Represent a visible line with its screen rectangle and preserve the original rectangle list for painting. The model must tolerate an empty list and non-contiguous line positions.
 - Prefer the document's screen text-box APIs and sort visible boxes by reading position before passing them to the model. This improves behavior for documents that return boxes in a different order and provides a best-effort order for multi-column pages.
 - Keep page transitions in the UI adapter because only the reader UI can dispatch `GotoViewRel`. The model reports `next_page` or `previous_page` when movement is requested beyond the current visible list.
-- Make visual treatment data-driven through persisted settings. The initial patterns are `underline`, `dim_others`, `spotlight`, and `hatch_others`; the spotlight pattern uses a configurable focus radius.
-- Use KOReader-native blitbuffer operations: `lightenRect` for dimming black text, `hatchRect` for a patterned overlay, and `paintRect`/`LineWidget` for the marker. Do not introduce a custom framebuffer or an external rendering dependency.
+- Make visual treatment data-driven through persisted settings. The patterns are `underline`, `dim_others`, `spotlight`, `hatch_others`, and `checker_others`; the spotlight pattern uses a configurable focus radius.
+- Use KOReader-native blitbuffer operations: continuous `lightenRect` bands for dimming all glyphs (including punctuation), `hatchRect` for translucent stripes and markers, grayscale `paintRect` cells for the checkerboard pattern, and no custom framebuffer or external rendering dependency. Since grayscale buffers do not expose alpha for `lightenRect`, map the 0–100% setting to zero through five passes.
+- Paint the marker directly from the current focus rectangle instead of delegating its position to a movable widget. This keeps the painted position and dirty region derived from the same state and prevents stale offsets when moving backward or forward.
+- Merge text segments with a shared baseline and nearby horizontal gap into one physical line. Keep distant same-height columns separate.
+- Persist marker and pattern opacity as percentages. Migrate the previous `line_intensity` value into the equivalent marker opacity when the new setting is first initialized.
+- Provide a small local Portuguese dictionary with Automatic/English/Português selection. Use dynamic menu text functions so changing language does not require restarting KOReader.
+- Provide a preview card backed by a native `ButtonDialog` and a custom paintable widget. Preview changes update the same persisted settings and repaint the card immediately.
+- Schedule automatic next-line movement with KOReader's `UIManager:scheduleIn`, unscheduling it when disabled or when the reader widget closes.
 - Keep interaction modes explicit: swipe direction, tap zone policy, tap-to-place mode, and dispatcher actions. A tap on the marker toggles placement mode; a tap while in placement mode chooses the nearest visible line.
 - Use settings defaults that preserve the original ruler-like behavior for existing users while making the richer patterns discoverable from the menu.
 - Register state and navigation actions with KOReader's dispatcher and register the plugin as a reader view module so it can repaint above the document.
@@ -60,6 +73,7 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 
 - Test only externally observable focus behavior in the pure model: initial placement, next/previous movement, nearest-line placement, empty pages, and page-boundary results.
 - Test visual pattern planning as returned regions/styles rather than asserting widget internals. The KOReader adapter is covered by syntax checks and a small set of dependency stubs where practical.
+- Test continuous mask bands, marker geometry, opacity clamping, checker/grid cells, and Portuguese/automatic label selection at the pure seams.
 - Run the model tests with the LuaJIT runtime shipped by the development machine; no test framework or third-party dependency is required.
 - Run Lua syntax checks over every plugin Lua file before publishing.
 - Manually validate on a KOReader device or emulator: enable/disable, each visual pattern, swipe directions, each tap policy, tap-to-place mode, dispatcher actions, and crossing both page boundaries.
@@ -73,6 +87,7 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 - Animated transitions, color-specific themes, or device-specific waveform tuning.
 - Synchronizing focus position across devices or books.
 - A settings import/migration tool from unrelated third-party plugins.
+- Full translation coverage for every KOReader language; this release provides Portuguese and English fallback while the plugin remains dependency-free.
 
 ## Further Notes
 

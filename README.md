@@ -12,13 +12,18 @@ the surrounding lines.
 
 - Underline, band, or combined marker for the focused line.
 - Visual patterns: underline only, dim other lines, spotlight a focus window,
-  or hatch other lines.
-- Adjustable marker thickness, intensity, and spotlight radius.
+  hatch other lines, or a continuous checkerboard grid.
+- Adjustable marker thickness, marker opacity, pattern opacity, and spotlight
+  radius.
 - Swipe up/down to move to the previous/next visible line.
 - Tap above/below the focus, use top/bottom or left/right zones, tap page
   edges, or tap anywhere to advance.
 - Tap the marker to enter tap-to-place mode, then tap any line.
 - Automatic previous/next page navigation at line boundaries.
+- Optional automatic line advance with a configurable interval.
+- Portuguese or English plugin labels, with automatic detection from KOReader.
+- A live preview card for trying patterns, marker styles, opacity, and automatic
+  advance before closing the configuration menu.
 - Dispatcher actions for hardware keys, profiles, and custom gestures.
 - Persistent settings and optional notifications.
 - Best-effort ordering for multi-column pages.
@@ -38,12 +43,20 @@ Open **Line focus** in the document menu:
 
 - **Visual pattern**: choose how non-focused lines are treated.
 - **Focus marker**: choose underline, band, both, or no marker.
-- **Line thickness** and **Marker intensity**: tune the focus cue.
+- **Line thickness**, **Marker opacity**, and **Pattern opacity**: tune the
+  focus cue and surrounding-line treatment from 0% to 100%.
 - **Spotlight radius**: keep this many neighboring lines undimmed when using
   the spotlight pattern.
 - **Swipe navigation**: choose swipes, taps, both, or neither.
 - **Tap navigation zones**: choose relative above/below taps, vertical or
   horizontal halves, page edges, anywhere, or disabled.
+- **Automatic advance**: move to the next line at a chosen interval from 1 to
+  60 seconds.
+- **Language**: choose Automatic, Português, or English.
+
+Use **Preview and configure** to open a card over the document menu. Its sample
+contains punctuation and parentheses so the effect of each visual treatment is
+visible before applying it to the page.
 
 ## Dispatcher actions
 
@@ -62,7 +75,7 @@ The repository is dependency-free. The model seam can be tested without a
 KOReader device:
 
 ```sh
-luajit tests/focus_model_spec.lua
+for test in tests/*_spec.lua; do luajit "$test"; done
 ```
 
 To check Lua syntax for all source files:
