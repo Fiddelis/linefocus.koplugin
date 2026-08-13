@@ -68,7 +68,9 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 - Keep interaction modes explicit: swipe direction, tap zone policy, tap-to-place mode, and dispatcher actions. A tap on the marker toggles placement mode; a tap while in placement mode chooses the nearest visible line.
 - Migrate the previous visual pattern names to their solid-gray equivalents and clamp Kindle-friendly thickness, focus-radius, and automatic-advance ranges.
 - Register state and navigation actions with KOReader's dispatcher and register the plugin as a reader view module so it can repaint above the document.
-- Build and release a folder named `linefocus.koplugin` inside the archive, matching KOReader's plugin installation convention.
+- Build and release an archive whose files extract directly into a
+  `linefocus.koplugin` directory, avoiding duplicate nested plugin folders
+  when an extractor creates a directory from the ZIP name.
 - Retain the upstream MIT license notice because the first implementation is derived from the public Reading Ruler plugin structure and API integration patterns.
 
 ## Testing Decisions

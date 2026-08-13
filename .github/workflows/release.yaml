@@ -31,8 +31,14 @@ jobs:
           cp -r !(linefocus.koplugin|.git|.github|koreader) linefocus.koplugin/
 
       - name: Create zip archive
+        working-directory: linefocus.koplugin
         run: |
-          zip -r linefocus.koplugin.zip linefocus.koplugin
+          zip -r ../linefocus.koplugin.zip .
+
+      - name: Validate archive layout
+        run: |
+          unzip -Z1 linefocus.koplugin.zip | grep -qx 'main.lua'
+          ! unzip -Z1 linefocus.koplugin.zip | grep -q '^linefocus\.koplugin/'
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

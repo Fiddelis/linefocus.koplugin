@@ -31,8 +31,10 @@ the surrounding lines.
 ## Installation
 
 1. Download `linefocus.koplugin.zip` from the latest release.
-2. Extract the `linefocus.koplugin` directory into KOReader's `plugins`
-   directory.
+2. Extract the archive into `plugins/linefocus.koplugin/` (or into `plugins/`
+   when the extractor creates a folder named after the ZIP). The resulting
+   path must be `plugins/linefocus.koplugin/main.lua`; do not create a second
+   `linefocus.koplugin` folder inside it.
 3. Restart KOReader.
 4. Open a document and choose **Menu → Tools → Line focus** (the exact menu
    location can vary by KOReader version).
