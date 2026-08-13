@@ -1,4 +1,3 @@
-local _ = require("gettext")
 local Device = require("device")
 local Screen = Device.screen
 local Geom = require("ui/geometry")
@@ -9,6 +8,7 @@ local Settings = require("lib/settings")
 local Ruler = require("lib/ruler")
 local RulerUI = require("lib/ui/ruler_ui")
 local Menu = require("lib/ui/menu")
+local I18n = require("lib/i18n")
 local Dispatcher = require("dispatcher")
 
 local LineFocus = InputContainer:extend{
@@ -18,6 +18,7 @@ local LineFocus = InputContainer:extend{
 
 function LineFocus:init()
     self.settings = Settings:new()
+    self.i18n = I18n:new(self.settings)
     self.ruler = Ruler:new{
         settings = self.settings,
         ui = self.ui,
@@ -69,27 +70,27 @@ function LineFocus:registerActions()
     Dispatcher:registerAction("linefocus_move_to_next_line", {
         category = "none",
         event = "LineFocusMoveToNextLine",
-        title = _("Line focus: move to next line"),
+        title = self.i18n:translate("Line focus: move to next line"),
         general = true,
     })
     Dispatcher:registerAction("linefocus_move_to_previous_line", {
         category = "none",
         event = "LineFocusMoveToPreviousLine",
-        title = _("Line focus: move to previous line"),
+        title = self.i18n:translate("Line focus: move to previous line"),
         general = true,
     })
     Dispatcher:registerAction("linefocus_set_state", {
         category = "string",
         event = "LineFocusSetState",
-        title = _("Line focus"),
+        title = self.i18n:translate("Line focus"),
         general = true,
         args = { true, false },
-        toggle = { _("enable"), _("disable") },
+        toggle = { self.i18n:translate("enable"), self.i18n:translate("disable") },
     })
     Dispatcher:registerAction("linefocus_toggle", {
         category = "none",
         event = "LineFocusToggle",
-        title = _("Line focus: toggle"),
+        title = self.i18n:translate("Line focus: toggle"),
         general = true,
     })
 end
