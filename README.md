@@ -8,6 +8,25 @@ the surrounding lines.
   <a href='https://ko-fi.com/H2H311JOCU' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi4.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 </p>
 
+## Demonstrations
+
+<table>
+  <tr>
+    <th>Gray other lines</th>
+    <th>Gray focus window</th>
+    <th>Continuous underline</th>
+  </tr>
+  <tr>
+    <td><img src="docs/gray_other_lines.gif" alt="Gray other lines demonstration" width="320" /></td>
+    <td><img src="docs/gray_focus_window.gif" alt="Gray focus window demonstration" width="320" /></td>
+    <td><img src="docs/underline.gif" alt="Continuous underline demonstration" width="320" /></td>
+  </tr>
+</table>
+
+### Visual settings
+
+<p><img src="docs/settings.png" alt="Line focus visual settings" width="428" /></p>
+
 ## Features
 
 - Continuous underline marker for the focused line.
