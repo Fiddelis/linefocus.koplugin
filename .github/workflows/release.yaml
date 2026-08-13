@@ -16,6 +16,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Verify tag points to the main branch tip
+        run: |
+          git fetch origin main --depth=1
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || {
+            echo "Release tags must point to the current main branch tip"
+            exit 1
+          }
+
       - name: Prepare plugin folder
         run: |
           mkdir linefocus.koplugin
@@ -23,8 +31,14 @@ jobs:
           cp -r !(linefocus.koplugin|.git|.github|koreader) linefocus.koplugin/
 
       - name: Create zip archive
+        working-directory: linefocus.koplugin
         run: |
-          zip -r linefocus.koplugin.zip linefocus.koplugin
+          zip -r ../linefocus.koplugin.zip .
+
+      - name: Validate archive layout
+        run: |
+          unzip -Z1 linefocus.koplugin.zip | grep -qx 'main.lua'
+          ! unzip -Z1 linefocus.koplugin.zip | grep -q '^linefocus\.koplugin/'
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

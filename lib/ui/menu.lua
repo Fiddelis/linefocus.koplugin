@@ -52,37 +52,9 @@ function Menu:addToMainMenu(menu_items)
                 callback = function() self.ruler_ui:toggleEnabled() end,
             },
             {
-                text_func = function() return self:tr("Preview and configure") end,
+                text_func = function() return self:tr("Visual focus settings") end,
                 keep_menu_open = true,
                 callback = function() self:showPreview() end,
-            },
-            {
-                text_func = function() return self:tr("Visual treatment") end,
-                sub_item_table = {
-                    self:choice("Continuous underline", "visual_pattern", "underline"),
-                    self:choice("Gray other lines", "visual_pattern", "gray_others"),
-                    self:choice("Gray focus window", "visual_pattern", "gray_window"),
-                },
-            },
-            {
-                text_func = function() return self:tr("Underline thickness") end,
-                keep_menu_open = true,
-                callback = function() self:showNumberDialog("line_thickness", 1, 4, 1, 1, "Underline thickness") end,
-            },
-            {
-                text_func = function() return self:tr("Underline opacity") end,
-                keep_menu_open = true,
-                callback = function() self:showNumberDialog("marker_opacity", 0, 100, 5, 10, "Underline opacity", "%.0f%%") end,
-            },
-            {
-                text_func = function() return self:tr("Gray opacity") end,
-                keep_menu_open = true,
-                callback = function() self:showNumberDialog("mask_opacity", 0, 100, 5, 10, "Gray opacity", "%.0f%%") end,
-            },
-            {
-                text_func = function() return self:tr("Lines kept clear around focus") end,
-                keep_menu_open = true,
-                callback = function() self:showNumberDialog("focus_radius", 0, 3, 1, 1, "Lines kept clear around focus") end,
             },
             {
                 text_func = function() return self:tr("Navigation") end,
@@ -119,7 +91,7 @@ function Menu:addToMainMenu(menu_items)
                 text_func = function() return self:tr("Language") end,
                 sub_item_table = {
                     self:choice("Automatic", "language", "auto"),
-                    self:choice("Português", "language", "pt-BR"),
+                    self:choice("Portuguese", "language", "pt-BR"),
                     self:choice("English", "language", "en"),
                 },
             },
@@ -173,6 +145,33 @@ function Menu:cycleSetting(key, values)
     self:setAndRefresh(key, values[1])
 end
 
+function Menu:refreshPreview()
+    if not self.preview_dialog then
+        return
+    end
+    self.preview_dialog:reinit()
+    UIManager:setDirty(self.preview_dialog, "ui")
+end
+
+function Menu:adjustPreviewSetting(key, delta, minimum, maximum)
+    local value = math.max(minimum, math.min(maximum, (tonumber(self.settings:get(key)) or minimum) + delta))
+    self:setAndRefresh(key, value)
+    self:refreshPreview()
+end
+
+function Menu:previewAdjust(label, key, delta, minimum, maximum, format)
+    local sign = delta < 0 and "−" or "+"
+    return {
+        text_func = function()
+            local value = tonumber(self.settings:get(key)) or minimum
+            return self:tr(label) .. ": " .. string.format(format, value) .. " " .. sign
+        end,
+        callback = function()
+            self:adjustPreviewSetting(key, delta, minimum, maximum)
+        end,
+    }
+end
+
 function Menu:previewChoice(label, key, values, labels)
     return {
         text_func = function()
@@ -182,22 +181,16 @@ function Menu:previewChoice(label, key, values, labels)
         end,
         callback = function()
             self:cycleSetting(key, values)
-            UIManager:setDirty(self.preview_dialog, "ui")
+            self:refreshPreview()
         end,
     }
-end
-
-function Menu:adjustPreviewOpacity(key, delta, dialog)
-    local value = math.max(0, math.min(100, (self.settings:get(key) or 0) + delta))
-    self:setAndRefresh(key, value)
-    UIManager:setDirty(dialog, "ui")
 end
 
 function Menu:showPreview()
     local preview = Preview:new{ settings = self.settings }
     local dialog
     dialog = ButtonDialog:new{
-        title = self:tr("Configurable line focus preview"),
+        title = self:tr("Visual focus settings"),
         title_align = "center",
         width_factor = 0.9,
         _added_widgets = { preview },
@@ -210,24 +203,20 @@ function Menu:showPreview()
                 }),
             },
             {
-                {
-                    text_func = function() return self:tr("Underline opacity") .. " -" end,
-                    callback = function() self:adjustPreviewOpacity("marker_opacity", -5, dialog) end,
-                },
-                {
-                    text_func = function() return self:tr("Underline opacity") .. " +" end,
-                    callback = function() self:adjustPreviewOpacity("marker_opacity", 5, dialog) end,
-                },
+                self:previewAdjust("Thickness", "line_thickness", -1, 1, 4, "%d px"),
+                self:previewAdjust("Thickness", "line_thickness", 1, 1, 4, "%d px"),
             },
             {
-                {
-                    text_func = function() return self:tr("Gray opacity") .. " -" end,
-                    callback = function() self:adjustPreviewOpacity("mask_opacity", -5, dialog) end,
-                },
-                {
-                    text_func = function() return self:tr("Gray opacity") .. " +" end,
-                    callback = function() self:adjustPreviewOpacity("mask_opacity", 5, dialog) end,
-                },
+                self:previewAdjust("Underline intensity", "marker_opacity", -5, 0, 100, "%.0f%%"),
+                self:previewAdjust("Underline intensity", "marker_opacity", 5, 0, 100, "%.0f%%"),
+            },
+            {
+                self:previewAdjust("Gray", "mask_opacity", -5, 0, 100, "%.0f%%"),
+                self:previewAdjust("Gray", "mask_opacity", 5, 0, 100, "%.0f%%"),
+            },
+            {
+                self:previewAdjust("Clear lines", "focus_radius", -1, 0, 3, "%d"),
+                self:previewAdjust("Clear lines", "focus_radius", 1, 0, 3, "%d"),
             },
             {
                 {
@@ -237,9 +226,15 @@ function Menu:showPreview()
                     end,
                     callback = function()
                         self:setAndRefresh("auto_advance", not self.settings:get("auto_advance"))
-                        UIManager:setDirty(dialog, "ui")
+                        self:refreshPreview()
                     end,
                 },
+            },
+            {
+                self:previewAdjust("Interval", "auto_advance_seconds", -1, 2, 60, "%.0f s"),
+                self:previewAdjust("Interval", "auto_advance_seconds", 1, 2, 60, "%.0f s"),
+            },
+            {
                 {
                     text_func = function() return self:tr("Close") end,
                     callback = function()

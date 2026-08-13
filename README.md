@@ -22,8 +22,8 @@ the surrounding lines.
 - Automatic previous/next page navigation at line boundaries.
 - Optional automatic line advance with a configurable interval.
 - Portuguese or English plugin labels, with automatic detection from KOReader.
-- A live preview card for trying visual treatments, opacity, and automatic
-  advance before closing the configuration menu.
+- A compact visual-settings card containing the treatment, thickness, both
+  opacities, clear-neighbor count, and automatic-advance controls.
 - Dispatcher actions for hardware keys, profiles, and custom gestures.
 - Persistent settings and optional notifications.
 - Best-effort ordering for multi-column pages.
@@ -31,20 +31,25 @@ the surrounding lines.
 ## Installation
 
 1. Download `linefocus.koplugin.zip` from the latest release.
-2. Extract the `linefocus.koplugin` directory into KOReader's `plugins`
-   directory.
+2. Extract the archive into `plugins/linefocus.koplugin/` (or into `plugins/`
+   when the extractor creates a folder named after the ZIP). The resulting
+   path must be `plugins/linefocus.koplugin/main.lua`; do not create a second
+   `linefocus.koplugin` folder inside it.
 3. Restart KOReader.
 4. Open a document and choose **Menu → Tools → Line focus** (the exact menu
    location can vary by KOReader version).
 
 ## Configuration
 
-Open **Line focus** in the document menu:
+Open **Line focus** in the document menu. Choose **Visual focus settings** for
+all visual options in one compact screen:
 
 - **Visual treatment**: choose continuous underline, gray other lines, or a
   gray focus window.
-- **Underline thickness**: choose a lightweight 1–4 pixel line.
-- **Underline opacity** and **Gray opacity**: tune both cues from 0% to 100%.
+- **Underline thickness**: choose a 1–4 pixel line; the live sample uses the
+  same value as the page overlay.
+- **Underline intensity**: set the marker from 0% (invisible) to 100% (black).
+- **Gray opacity**: tune the dimming from 0% to 100%.
 - **Lines kept clear around focus**: keep 0–3 neighboring lines clear when
   using the gray focus window.
 - **Swipe navigation**: choose swipes, taps, both, or neither.
@@ -52,12 +57,12 @@ Open **Line focus** in the document menu:
   horizontal halves, page edges, anywhere, or disabled.
 - **Automatic advance**: move to the next line at a chosen interval from 2 to
   60 seconds.
-- **Language**: choose Automatic, Português, or English.
+- **Language**: choose Automatic, Portuguese, or English.
 
-Use **Preview and configure** to open a card over the document menu. Its sample
-contains punctuation and parentheses so the effect of each visual treatment is
-visible before applying it to the page. The preview uses the same solid-gray
-and continuous-underline operations as the document overlay.
+The settings card updates its labels and sample immediately after every change.
+Its sample contains punctuation and parentheses so the effect of each visual
+treatment is visible before applying it to the page. The preview uses the same
+solid-gray and continuous-underline operations as the document overlay.
 
 ## Dispatcher actions
 

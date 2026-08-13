@@ -58,15 +58,22 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 - Make visual treatment data-driven through persisted settings. The patterns are `underline`, `gray_others`, and `gray_window`; the gray window uses a configurable number of clear neighboring lines.
 - Use KOReader-native blitbuffer operations: one `darkenRect` call per continuous gray band and one `paintRect` call for the underline. Do not use per-line patterns, repeated lighten passes, custom framebuffers, or external rendering dependencies.
 - Paint the marker directly from the current focus rectangle instead of delegating its position to a movable widget. This keeps the painted position and dirty region derived from the same state and prevents stale offsets when moving backward or forward.
+- When a gray focus moves, refresh the bounding transition between the old and new focus windows so the previous clear area is repainted without forcing a full-screen refresh on every line move.
 - Merge text segments with a shared baseline and nearby horizontal gap into one physical line. Keep distant same-height columns separate.
-- Persist marker and pattern opacity as percentages. Migrate the previous `line_intensity` value into the equivalent marker opacity when the new setting is first initialized.
-- Provide a small local Portuguese dictionary with Automatic/English/Português selection. Use dynamic menu text functions so changing language does not require restarting KOReader.
+- Persist marker and pattern opacity as percentages. Map marker opacity directly
+  to KOReader gray intensity: 0% is invisible/white and 100% is black. Migrate
+  the previous `line_intensity` value into the equivalent marker opacity when
+  the new setting is first initialized.
+- Provide a small local Portuguese dictionary with Automatic/English/Portuguese selection. Explicit English bypasses KOReader's global gettext locale so it cannot inherit a Portuguese interface. Use dynamic menu text functions so changing language does not require restarting KOReader.
 - Provide a preview card backed by a native `ButtonDialog` and a custom paintable widget. Preview changes update the same persisted settings and repaint the card immediately.
+- Rebuild the native preview dialog after a setting change because KOReader evaluates button `text_func` values during button creation; this keeps displayed values synchronized with the sample.
 - Schedule automatic next-line movement with KOReader's `UIManager:scheduleIn`, unscheduling it when disabled or when the reader widget closes.
 - Keep interaction modes explicit: swipe direction, tap zone policy, tap-to-place mode, and dispatcher actions. A tap on the marker toggles placement mode; a tap while in placement mode chooses the nearest visible line.
 - Migrate the previous visual pattern names to their solid-gray equivalents and clamp Kindle-friendly thickness, focus-radius, and automatic-advance ranges.
 - Register state and navigation actions with KOReader's dispatcher and register the plugin as a reader view module so it can repaint above the document.
-- Build and release a folder named `linefocus.koplugin` inside the archive, matching KOReader's plugin installation convention.
+- Build and release an archive whose files extract directly into a
+  `linefocus.koplugin` directory, avoiding duplicate nested plugin folders
+  when an extractor creates a directory from the ZIP name.
 - Retain the upstream MIT license notice because the first implementation is derived from the public Reading Ruler plugin structure and API integration patterns.
 
 ## Testing Decisions
@@ -74,9 +81,12 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
 - Test only externally observable focus behavior in the pure model: initial placement, next/previous movement, nearest-line placement, empty pages, and page-boundary results.
 - Test visual treatment planning as returned regions/operations rather than asserting widget internals. The KOReader adapter is covered by syntax checks and a small set of dependency stubs where practical.
 - Test continuous mask bands, one-operation gray planning, continuous marker geometry, opacity clamping, and Portuguese/automatic label selection at the pure seams.
+- Test that the live preview uses the configured marker thickness and the same
+  opacity direction as the document overlay.
 - Run the model tests with the LuaJIT runtime shipped by the development machine; no test framework or third-party dependency is required.
 - Run Lua syntax checks over every plugin Lua file before publishing.
 - Keep a lightweight rendering plan check so regressions cannot reintroduce repeated buffer passes or per-cell pattern loops on Kindle.
+- Test focus transition regions so old gray overlays cannot remain visible after moving to the next or previous line.
 - Manually validate on a KOReader device or emulator: enable/disable, each visual pattern, swipe directions, each tap policy, tap-to-place mode, dispatcher actions, and crossing both page boundaries.
 - Prior art for integration behavior is KOReader's reader view modules and the upstream Reading Ruler plugin; tests should not depend on private widget implementation details.
 

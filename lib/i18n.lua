@@ -4,6 +4,13 @@ local PORTUGUESE = {
     ["Line focus"] = "Foco de linha",
     ["Toggle line focus"] = "Ativar/desativar foco de linha",
     ["Preview and configure"] = "Visualizar e configurar",
+    ["Visual focus settings"] = "Configurações visuais do foco",
+    ["Thickness"] = "Espessura",
+    ["Underline"] = "Sublinhado",
+    ["Underline intensity"] = "Intensidade do sublinhado",
+    ["Gray"] = "Cinza",
+    ["Clear lines"] = "Linhas claras",
+    ["Interval"] = "Intervalo",
     ["Visual treatment"] = "Tratamento visual",
     ["Continuous underline"] = "Sublinhado contínuo",
     ["Gray other lines"] = "Cinza nas outras linhas",
@@ -50,8 +57,8 @@ local PORTUGUESE = {
     ["Notifications"] = "Notificações",
     ["Language"] = "Idioma",
     ["Automatic"] = "Automático",
-    ["Português"] = "Português",
-    ["English"] = "English",
+    ["Portuguese"] = "Português",
+    ["English"] = "Inglês",
     ["Automatic advance"] = "Avanço automático",
     ["Advance automatically"] = "Avançar automaticamente",
     ["Automatic advance interval"] = "Intervalo do avanço automático",
@@ -99,9 +106,17 @@ function I18n:getLanguage()
 end
 
 function I18n:translate(text)
-    if self:getLanguage() == "pt-BR" then
+    local language = self:getLanguage()
+    if language == "pt-BR" then
         return PORTUGUESE[text] or text
     end
+
+    -- An explicit English choice must not be passed through KOReader's global
+    -- gettext locale, which may still be Portuguese (or another language).
+    if self.settings and self.settings:get("language") == "en" then
+        return text
+    end
+
     return GetText(text)
 end
 
