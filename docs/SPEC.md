@@ -64,7 +64,7 @@ Settings are persisted per device. Existing KOReader page navigation remains ava
   to KOReader gray intensity: 0% is invisible/white and 100% is black. Migrate
   the previous `line_intensity` value into the equivalent marker opacity when
   the new setting is first initialized.
-- Provide a small local Portuguese dictionary with Automatic/English/Português selection. Use dynamic menu text functions so changing language does not require restarting KOReader.
+- Provide a small local Portuguese dictionary with Automatic/English/Portuguese selection. Explicit English bypasses KOReader's global gettext locale so it cannot inherit a Portuguese interface. Use dynamic menu text functions so changing language does not require restarting KOReader.
 - Provide a preview card backed by a native `ButtonDialog` and a custom paintable widget. Preview changes update the same persisted settings and repaint the card immediately.
 - Rebuild the native preview dialog after a setting change because KOReader evaluates button `text_func` values during button creation; this keeps displayed values synchronized with the sample.
 - Schedule automatic next-line movement with KOReader's `UIManager:scheduleIn`, unscheduling it when disabled or when the reader widget closes.

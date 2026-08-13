@@ -91,7 +91,7 @@ function Menu:addToMainMenu(menu_items)
                 text_func = function() return self:tr("Language") end,
                 sub_item_table = {
                     self:choice("Automatic", "language", "auto"),
-                    self:choice("Português", "language", "pt-BR"),
+                    self:choice("Portuguese", "language", "pt-BR"),
                     self:choice("English", "language", "en"),
                 },
             },

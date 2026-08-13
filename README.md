@@ -57,7 +57,7 @@ all visual options in one compact screen:
   horizontal halves, page edges, anywhere, or disabled.
 - **Automatic advance**: move to the next line at a chosen interval from 2 to
   60 seconds.
-- **Language**: choose Automatic, Português, or English.
+- **Language**: choose Automatic, Portuguese, or English.
 
 The settings card updates its labels and sample immediately after every change.
 Its sample contains punctuation and parentheses so the effect of each visual

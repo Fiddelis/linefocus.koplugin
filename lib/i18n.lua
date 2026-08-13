@@ -57,7 +57,7 @@ local PORTUGUESE = {
     ["Notifications"] = "Notificações",
     ["Language"] = "Idioma",
     ["Automatic"] = "Automático",
-    ["Português"] = "Português",
+    ["Portuguese"] = "Português",
     ["English"] = "Inglês",
     ["Automatic advance"] = "Avanço automático",
     ["Advance automatically"] = "Avançar automaticamente",
@@ -106,9 +106,17 @@ function I18n:getLanguage()
 end
 
 function I18n:translate(text)
-    if self:getLanguage() == "pt-BR" then
+    local language = self:getLanguage()
+    if language == "pt-BR" then
         return PORTUGUESE[text] or text
     end
+
+    -- An explicit English choice must not be passed through KOReader's global
+    -- gettext locale, which may still be Portuguese (or another language).
+    if self.settings and self.settings:get("language") == "en" then
+        return text
+    end
+
     return GetText(text)
 end
 
